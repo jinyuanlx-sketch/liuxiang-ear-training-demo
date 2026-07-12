@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>流响音乐 | 动态尾图</title>
+    <style>
+      :root {
+        --bg: #05030c;
+        --cream: #fff7d7;
+        --gold: #f5c878;
+        --violet: #8b54ff;
+        --violet-soft: #b185ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        overflow: hidden;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        font-family:
+          "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui,
+          sans-serif;
+      }
+
+      .stage {
+        width: 100vw;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 50% 28%, rgba(116, 66, 255, 0.2), transparent 35%),
+          radial-gradient(circle at 50% 82%, rgba(245, 200, 120, 0.12), transparent 28%),
+          #020108;
+      }
+
+      .poster {
+        position: relative;
+        width: min(100vw, calc(100svh * 941 / 1672));
+        height: min(100svh, calc(100vw * 1672 / 941));
+        aspect-ratio: 941 / 1672;
+        overflow: hidden;
+        background: #06030d;
+        box-shadow: 0 0 52px rgba(128, 72, 255, 0.28);
+        isolation: isolate;
+      }
+
+      .poster::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("assets/end-card.png") center / cover no-repeat;
+        transform: scale(1.01);
+        animation: imageBreath 9s ease-in-out infinite;
+        z-index: 0;
+      }
+
+      .poster::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 50% 22%, rgba(255, 247, 215, 0.18), transparent 22%),
+          radial-gradient(circle at 50% 58%, transparent 48%, rgba(3, 1, 9, 0.25) 78%),
+          linear-gradient(180deg, rgba(0, 0, 0, 0.08), transparent 42%, rgba(0, 0, 0, 0.2));
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .motion {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+
+      .character-layers {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .character {
+        position: absolute;
+        inset: 0;
+        background: url("assets/end-card.png") center / cover no-repeat;
+        opacity: 0.24;
+        mix-blend-mode: lighten;
+        mask-repeat: no-repeat;
+        mask-size: 100% 100%;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        will-change: transform, filter;
+      }
+
+      .character-left {
+        mask-image: radial-gradient(ellipse 17% 19% at 18% 61%, #000 0 44%, transparent 78%);
+        -webkit-mask-image: radial-gradient(ellipse 17% 19% at 18% 61%, #000 0 44%, transparent 78%);
+        transform-origin: 18% 59%;
+        animation: leftPerformer 4.8s ease-in-out infinite;
+      }
+
+      .character-center {
+        mask-image: radial-gradient(ellipse 18% 17% at 47% 66%, #000 0 42%, transparent 78%);
+        -webkit-mask-image: radial-gradient(ellipse 18% 17% at 47% 66%, #000 0 42%, transparent 78%);
+        transform-origin: 47% 65%;
+        animation: centerPerformer 5.2s ease-in-out infinite;
+      }
+
+      .character-right {
+        mask-image: radial-gradient(ellipse 19% 18% at 72% 64%, #000 0 42%, transparent 78%);
+        -webkit-mask-image: radial-gradient(ellipse 19% 18% at 72% 64%, #000 0 42%, transparent 78%);
+        transform-origin: 70% 62%;
+        animation: rightPerformer 4.4s ease-in-out infinite;
+      }
+
+      .halo,
+      .river,
+      .spark,
+      .note,
+      .gesture-line,
+      .page-glint,
+      .hair-glint,
+      .caption-shine {
+        filter: url("#softGlow");
+      }
+
+      .ring {
+        fill: none;
+        stroke-linecap: round;
+        stroke-width: 1.5;
+        opacity: 0.6;
+      }
+
+      .ring-gold {
+        stroke: var(--gold);
+      }
+
+      .ring-violet {
+        stroke: var(--violet-soft);
+      }
+
+      .ring-dash {
+        stroke-dasharray: 16 24 4 36;
+        animation: dashFlow 16s linear infinite;
+      }
+
+      .ring-dash.fast {
+        animation-duration: 11s;
+        animation-direction: reverse;
+      }
+
+      .sig-line {
+        fill: none;
+        stroke: var(--cream);
+        stroke-width: 4.5;
+        stroke-linecap: round;
+        stroke-dasharray: 96 620;
+        opacity: 0.72;
+        animation: signatureSweep 5.4s ease-in-out infinite;
+      }
+
+      .river {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .river-wide {
+        stroke: url("#riverGold");
+        stroke-width: 8;
+        stroke-dasharray: 120 560;
+        opacity: 0.58;
+        animation: riverRun 7.2s linear infinite;
+      }
+
+      .river-thin {
+        stroke: var(--violet-soft);
+        stroke-width: 3;
+        stroke-dasharray: 36 220;
+        opacity: 0.65;
+        animation: riverRun 5.8s linear infinite reverse;
+      }
+
+      .river-spark {
+        stroke: var(--cream);
+        stroke-width: 2;
+        stroke-dasharray: 12 180;
+        opacity: 0.82;
+        animation: riverRun 4.5s linear infinite;
+      }
+
+      .note text {
+        fill: var(--gold);
+        font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Music", serif;
+        font-weight: 700;
+        paint-order: stroke;
+        stroke: rgba(11, 6, 24, 0.45);
+        stroke-width: 2;
+      }
+
+      .note-small text {
+        font-size: 30px;
+        opacity: 0.74;
+      }
+
+      .note-big text {
+        font-size: 44px;
+        opacity: 0.88;
+      }
+
+      .spark {
+        fill: var(--cream);
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: twinkle 3.2s ease-in-out infinite;
+      }
+
+      .spark.violet {
+        fill: var(--violet-soft);
+      }
+
+      .spark.gold {
+        fill: var(--gold);
+      }
+
+      .gesture-line,
+      .hair-glint,
+      .page-glint {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .gesture-line {
+        stroke: var(--cream);
+        stroke-width: 2.4;
+        stroke-dasharray: 18 90;
+        opacity: 0;
+        animation: gestureBreathe 3.8s ease-in-out infinite;
+      }
+
+      .hair-glint {
+        stroke: var(--violet-soft);
+        stroke-width: 1.8;
+        stroke-dasharray: 24 90;
+        opacity: 0;
+        animation: hairFlicker 4.6s ease-in-out infinite;
+      }
+
+      .page-glint {
+        stroke: var(--gold);
+        stroke-width: 1.7;
+        stroke-dasharray: 30 120;
+        opacity: 0;
+        animation: pageFlutter 4.2s ease-in-out infinite;
+      }
+
+      .s2 {
+        animation-delay: 0.35s;
+      }
+
+      .s3 {
+        animation-delay: 0.75s;
+      }
+
+      .s4 {
+        animation-delay: 1.1s;
+      }
+
+      .s5 {
+        animation-delay: 1.55s;
+      }
+
+      .s6 {
+        animation-delay: 2s;
+      }
+
+      .s7 {
+        animation-delay: 2.45s;
+      }
+
+      .d2 {
+        animation-delay: 0.45s;
+      }
+
+      .d3 {
+        animation-delay: 0.9s;
+      }
+
+      .d4 {
+        animation-delay: 1.35s;
+      }
+
+      .caption-shine {
+        fill: none;
+        stroke: var(--cream);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-dasharray: 50 650;
+        opacity: 0.78;
+        animation: captionSweep 4.8s ease-in-out infinite;
+      }
+
+      .breath-vignette {
+        fill: url("#topGlow");
+        opacity: 0.55;
+        animation: glowBreath 4.6s ease-in-out infinite;
+      }
+
+      @keyframes imageBreath {
+        0%,
+        100% {
+          transform: scale(1.01);
+          filter: saturate(1) brightness(1);
+        }
+        50% {
+          transform: scale(1.028);
+          filter: saturate(1.08) brightness(1.05);
+        }
+      }
+
+      @keyframes leftPerformer {
+        0%,
+        100% {
+          transform: translate3d(0, 0, 0) rotate(0deg);
+          filter: brightness(1);
+        }
+        50% {
+          transform: translate3d(0.26%, -0.28%, 0) rotate(-0.24deg);
+          filter: brightness(1.06);
+        }
+      }
+
+      @keyframes centerPerformer {
+        0%,
+        100% {
+          transform: translate3d(0, 0, 0) rotate(0deg);
+          filter: brightness(1);
+        }
+        48% {
+          transform: translate3d(-0.22%, -0.22%, 0) rotate(0.22deg);
+          filter: brightness(1.05);
+        }
+      }
+
+      @keyframes rightPerformer {
+        0%,
+        100% {
+          transform: translate3d(0, 0, 0) rotate(0deg);
+          filter: brightness(1);
+        }
+        52% {
+          transform: translate3d(0.24%, -0.34%, 0) rotate(-0.28deg);
+          filter: brightness(1.07);
+        }
+      }
+
+      @keyframes dashFlow {
+        to {
+          stroke-dashoffset: -420;
+        }
+      }
+
+      @keyframes signatureSweep {
+        0% {
+          stroke-dashoffset: 420;
+          opacity: 0;
+        }
+        18%,
+        68% {
+          opacity: 0.82;
+        }
+        100% {
+          stroke-dashoffset: -320;
+          opacity: 0;
+        }
+      }
+
+      @keyframes riverRun {
+        to {
+          stroke-dashoffset: -760;
+        }
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0;
+          transform: scale(0.55);
+        }
+        45% {
+          opacity: 0.95;
+          transform: scale(1.35);
+        }
+      }
+
+      @keyframes gestureBreathe {
+        0%,
+        100% {
+          stroke-dashoffset: 120;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        42%,
+        64% {
+          opacity: 0.78;
+          transform: translateY(-4px);
+        }
+      }
+
+      @keyframes hairFlicker {
+        0%,
+        100% {
+          stroke-dashoffset: 110;
+          opacity: 0;
+        }
+        46% {
+          stroke-dashoffset: 0;
+          opacity: 0.55;
+        }
+      }
+
+      @keyframes pageFlutter {
+        0%,
+        100% {
+          stroke-dashoffset: 150;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        45% {
+          stroke-dashoffset: 0;
+          opacity: 0.72;
+          transform: translateY(-3px);
+        }
+      }
+
+      @keyframes captionSweep {
+        0% {
+          stroke-dashoffset: 690;
+          opacity: 0;
+        }
+        30%,
+        70% {
+          opacity: 0.78;
+        }
+        100% {
+          stroke-dashoffset: -690;
+          opacity: 0;
+        }
+      }
+
+      @keyframes glowBreath {
+        0%,
+        100% {
+          opacity: 0.38;
+        }
+        50% {
+          opacity: 0.72;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage" aria-label="流响音乐动态结尾图">
+      <section class="poster">
+        <div class="character-layers" aria-hidden="true">
+          <div class="character character-left"></div>
+          <div class="character character-center"></div>
+          <div class="character character-right"></div>
+        </div>
+        <svg class="motion" viewBox="0 0 941 1672" aria-hidden="true">
+          <defs>
+            <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feColorMatrix
+                in="blur"
+                type="matrix"
+                values="1 0 0 0 0.18  0 1 0 0 0.12  0 0 1 0 0.02  0 0 0 0.82 0"
+                result="warmBlur"
+              />
+              <feMerge>
+                <feMergeNode in="warmBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            <linearGradient id="riverGold" x1="50" y1="1320" x2="900" y2="620">
+              <stop offset="0" stop-color="#7f49ff" stop-opacity="0" />
+              <stop offset="0.24" stop-color="#a877ff" />
+              <stop offset="0.58" stop-color="#f6cf82" />
+              <stop offset="1" stop-color="#fff7d7" stop-opacity="0.35" />
+            </linearGradient>
+
+            <radialGradient id="topGlow" cx="50%" cy="21%" r="34%">
+              <stop offset="0" stop-color="#fff7d7" stop-opacity="0.18" />
+              <stop offset="0.35" stop-color="#7d55ff" stop-opacity="0.12" />
+              <stop offset="1" stop-color="#000000" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <rect class="breath-vignette" width="941" height="1672" />
+
+          <g class="halo">
+            <circle class="ring ring-gold ring-dash" cx="470.5" cy="315" r="212" />
+            <circle class="ring ring-violet ring-dash fast" cx="470.5" cy="315" r="270" />
+            <circle class="ring ring-gold ring-dash" cx="470.5" cy="315" r="326" opacity="0.36" />
+            <path
+              class="sig-line"
+              d="M 352 324 C 394 314 431 332 470 326 C 526 316 567 314 622 322 C 670 329 712 324 761 314"
+            />
+          </g>
+
+          <path
+            class="river river-wide"
+            d="M -60 1328 C 145 1266 244 1192 365 1082 C 475 982 613 925 692 790 C 755 682 840 609 1005 548"
+          />
+          <path
+            class="river river-thin"
+            d="M -40 1228 C 124 1188 268 1132 404 1036 C 543 938 656 861 730 742 C 800 628 890 566 987 520"
+          />
+          <path
+            class="river river-spark"
+            d="M 52 1108 C 178 1072 299 1017 414 928 C 520 846 621 788 742 678 C 812 615 875 579 944 552"
+          />
+
+          <g class="note note-big">
+            <text x="0" y="0">♪</text>
+            <animateMotion
+              dur="9.5s"
+              begin="-1s"
+              repeatCount="indefinite"
+              rotate="auto"
+              path="M 112 1228 C 220 1160 333 1108 441 1018 C 538 938 635 840 720 722"
+            />
+          </g>
+
+          <g class="note note-small">
+            <text x="0" y="0">♫</text>
+            <animateMotion
+              dur="11s"
+              begin="-4s"
+              repeatCount="indefinite"
+              rotate="auto"
+              path="M 280 808 C 385 770 492 722 590 645 C 682 572 751 496 814 422"
+            />
+          </g>
+
+          <g class="note note-small">
+            <text x="0" y="0">♪</text>
+            <animateMotion
+              dur="8.6s"
+              begin="-2.2s"
+              repeatCount="indefinite"
+              rotate="auto"
+              path="M 512 1198 C 612 1096 686 1012 735 902 C 774 814 821 744 900 690"
+            />
+          </g>
+
+          <circle class="spark gold s1" cx="235" cy="792" r="4.5" />
+          <circle class="spark violet s2" cx="332" cy="745" r="5" />
+          <circle class="spark s3" cx="622" cy="638" r="3.4" />
+          <circle class="spark gold s4" cx="763" cy="516" r="4.2" />
+          <circle class="spark s5" cx="534" cy="1142" r="3.6" />
+          <circle class="spark violet s6" cx="228" cy="1316" r="4.8" />
+          <circle class="spark gold s7" cx="805" cy="1177" r="3.6" />
+
+          <g class="performer-motion">
+            <path
+              class="hair-glint"
+              d="M 64 821 C 92 782 143 764 187 787 C 137 783 99 803 74 838"
+            />
+            <path
+              class="gesture-line d2"
+              d="M 250 966 C 260 946 265 925 260 904"
+            />
+            <path
+              class="page-glint d3"
+              d="M 139 1114 C 192 1105 233 1115 282 1135"
+            />
+
+            <path
+              class="hair-glint d2"
+              d="M 345 962 C 383 922 446 918 487 947"
+            />
+            <path
+              class="gesture-line d3"
+              d="M 398 1210 C 429 1197 461 1199 491 1217"
+            />
+            <path
+              class="page-glint d4"
+              d="M 492 1146 C 528 1150 565 1166 595 1193"
+            />
+
+            <path
+              class="hair-glint d3"
+              d="M 536 986 C 585 940 666 945 713 990"
+            />
+            <path
+              class="gesture-line d4"
+              d="M 769 918 C 793 888 804 859 809 821"
+            />
+            <path
+              class="page-glint d2"
+              d="M 657 1088 C 701 1095 740 1111 778 1138"
+            />
+          </g>
+
+          <path
+            class="caption-shine"
+            d="M 134 1568 C 250 1568 334 1568 436 1568 C 558 1568 679 1568 807 1568"
+          />
+        </svg>
+      </section>
+    </main>
+  </body>
+</html>

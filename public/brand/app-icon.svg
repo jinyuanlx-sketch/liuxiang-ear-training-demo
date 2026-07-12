@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Liuxiang Music">
+  <rect width="512" height="512" rx="104" fill="#07080b"/>
+  <circle cx="256" cy="236" r="128" fill="#f4efe6"/>
+  <circle cx="256" cy="236" r="106" fill="none" stroke="#07080b" stroke-width="10"/>
+  <path d="M122 236c54-34 93-34 134 0s80 34 134 0" fill="none" stroke="#07080b" stroke-width="16" stroke-linecap="round"/>
+  <path d="M242 292c0-78 18-128 47-128 21 0 29 26 7 48-22 23-54 44-54 80 0 31 24 50 61 36" fill="none" stroke="#07080b" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M120 390c84-38 188-38 272 0" fill="none" stroke="#c8a15a" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="392" cy="374" r="12" fill="#c8a15a"/>
+</svg>
