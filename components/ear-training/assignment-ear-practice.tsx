@@ -5,7 +5,6 @@ import { Check, Play, X } from "lucide-react";
 import type { EarTrainingQuestion } from "@/types/question-bank";
 import type { TrainingResourceLink, TrainingResourceQuery } from "@/types/training-resource";
 import { TrainingResourceList } from "@/components/training-resources/training-resource-list";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { playEarQuestion } from "@/lib/ear-training-engine/audio";
 import type { EarQuestion } from "@/lib/ear-training-engine/generator";
@@ -14,15 +13,11 @@ import { cn } from "@/lib/utils";
 
 export function AssignmentEarPractice({
   question,
-  beforeResources = [],
   afterResources = [],
-  beforeResourceQuery,
   afterResourceQuery
 }: {
   question: EarTrainingQuestion;
-  beforeResources?: TrainingResourceLink[];
   afterResources?: TrainingResourceLink[];
-  beforeResourceQuery?: TrainingResourceQuery;
   afterResourceQuery?: TrainingResourceQuery;
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -59,26 +54,16 @@ export function AssignmentEarPractice({
   return (
     <div className="space-y-4">
       <div className="liuxiang-panel rounded-lg p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <Badge tone="success">自动判分</Badge>
-            <h1 className="mt-3 text-2xl font-semibold text-ivory">{question.title}</h1>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              点击播放后选择答案，系统会立即给出正确性反馈。
-            </p>
+            <h2 className="text-lg font-semibold text-ivory">播放题目</h2>
+            <p className="mt-1 text-sm text-muted">听清后选择答案。</p>
           </div>
-          <Button type="button" variant="primary" icon={<Play className="h-4 w-4" />} onClick={() => void playEarQuestion(earQuestion)}>
+          <Button type="button" variant="primary" className="w-full sm:w-auto" icon={<Play className="h-4 w-4" />} onClick={() => void playEarQuestion(earQuestion)}>
             播放
           </Button>
         </div>
       </div>
-
-      <TrainingResourceList
-        title="对应训练"
-        helper="这是与本题训练点相关的讲解资源。观看后可返回继续练习。"
-        resources={beforeResources}
-        resourceQuery={beforeResourceQuery}
-      />
 
       <div className="liuxiang-panel rounded-lg p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -115,9 +100,7 @@ export function AssignmentEarPractice({
           </div>
           {question.explanation ? <p className="mt-3 text-sm leading-6 text-muted">{question.explanation}</p> : null}
           {saved ? (
-            <div className="mt-3 rounded-md border border-brass/20 bg-brass/10 p-3 text-sm text-brass">
-              Demo 模式：本次结果以示例记录展示；接入 Supabase 后会写入练习记录。
-            </div>
+            <p className="mt-3 text-xs text-muted">Demo 数据，接入 Supabase 后保存练习记录。</p>
           ) : null}
         </div>
       ) : null}
@@ -125,7 +108,7 @@ export function AssignmentEarPractice({
       {isAnswered ? (
         <TrainingResourceList
           title="对应训练"
-          helper="这是与本题训练点相关的讲解资源。观看后可返回继续练习。"
+          helper="完成练习后，可观看对应讲解。"
           resources={afterResources}
           resourceQuery={afterResourceQuery}
         />

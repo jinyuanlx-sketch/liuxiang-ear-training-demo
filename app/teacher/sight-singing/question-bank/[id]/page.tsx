@@ -4,6 +4,7 @@ import { TeacherShell } from "@/components/layout/teacher-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrainingResourceManager } from "@/components/training-resources/training-resource-manager";
+import { SightScoreViewer } from "@/components/sight-singing/sight-score-viewer";
 import { getSightSingingQuestionById } from "@/lib/question-bank";
 import { getTrainingResourcesForTeacherTarget } from "@/lib/training-resource-links";
 
@@ -54,9 +55,7 @@ export default async function SightQuestionDetailPage({
         <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
           <section className="liuxiang-panel rounded-lg p-4">
             <h2 className="text-lg font-semibold text-ivory">谱面展示层</h2>
-            <div className="staff-lines mt-4 flex min-h-56 items-center justify-center rounded-lg border border-ivory/10 bg-ink-950/40 text-sm text-muted">
-              {question.scoreImageUrl || question.pdfUrl ? "谱面文件预览" : "暂无谱面图片或 PDF"}
-            </div>
+            <SightScoreViewer question={question} />
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <Info label="调号" value={question.keySignature} />
               <Info label="拍号" value={question.timeSignature} />
@@ -66,7 +65,8 @@ export default async function SightQuestionDetailPage({
           </section>
 
           <section className="liuxiang-panel rounded-lg p-4">
-            <h2 className="text-lg font-semibold text-ivory">机器评分层</h2>
+            <h2 className="text-lg font-semibold text-ivory">检测调试层（仅老师）</h2>
+            <p className="mt-2 text-xs leading-5 text-brass">实验性音高检测，仅用于技术测试，暂不作为训练评价。</p>
             <JsonBlock label="target_pitch_json" value={question.targetPitchJson} />
             <JsonBlock label="target_rhythm_json" value={question.targetRhythmJson} />
             <div className="mt-4 flex flex-wrap gap-2">

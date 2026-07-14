@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Activity,
   ClipboardList,
   FileAudio,
   LayoutDashboard,
@@ -22,6 +23,7 @@ const teacherNavItems = [
   { href: "/teacher/assignments", label: "任务", icon: ClipboardList },
   { href: "/teacher/submissions", label: "提交", icon: FileAudio },
   { href: "/teacher/progress", label: "进度", icon: BarChart3 },
+  { href: "/teacher/audio-diagnostics", label: "音频诊断", icon: Activity },
   { href: "/teacher/theory", label: "乐理", icon: Library }
 ];
 

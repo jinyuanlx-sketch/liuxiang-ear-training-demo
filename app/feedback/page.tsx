@@ -10,7 +10,7 @@ export default function FeedbackPage() {
         <div>
           <Badge tone="warning">老师诊断</Badge>
           <h1 className="mt-3 text-3xl font-semibold text-ivory">反馈记录</h1>
-          <p className="mt-2 text-sm leading-6 text-muted">自动评分之外的专业判断和下一步训练建议。</p>
+          <p className="mt-2 text-sm leading-6 text-muted">实验性技术检测之外的专业判断和下一步训练建议。</p>
         </div>
 
         {feedbackItems.map((feedback) => (

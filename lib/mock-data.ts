@@ -73,7 +73,7 @@ export const sightSingingQuestions: SightSingingQuestion[] = [
     rangeHigh: "G4",
     scoreImageUrl: null,
     pdfUrl: null,
-    musicxmlUrl: null,
+    musicxmlUrl: "/demo/sight-c-major-2-4.musicxml",
     midiUrl: null,
     targetPitchJson: ["C4", "D4", "E4", "D4", "C4", "E4", "D4", "C4"],
     targetRhythmJson: [
@@ -276,7 +276,7 @@ export const assignments: Assignment[] = [
         "quarter",
         "quarter"
       ],
-      scoreUrl: null
+      scoreUrl: "/demo/sight-c-major-2-4.musicxml"
     },
     dueDate: "2026-07-10T14:00:00.000Z",
     createdAt: "2026-07-08T08:00:00.000Z"
@@ -485,8 +485,8 @@ export const submissions: Submission[] = [
     studentId: "student-lin",
     submissionType: "audio",
     fileUrl: null,
-    autoScore: 82,
-    status: "auto_scored",
+    autoScore: null,
+    status: "submitted",
     submittedAt: "2026-07-08T12:10:00.000Z",
     autoResultJson: {
       pitchAccuracy: 82,
@@ -494,6 +494,9 @@ export const submissions: Submission[] = [
       maxCentDeviation: 68,
       wrongNoteCount: 2,
       stabilityScore: 76,
+      voiceType: "female",
+      rawDetectedPitchTrack: [],
+      scoringAdjustedPitchTrack: [],
       detectedPitchTrack: [],
       items: [
         {
@@ -503,7 +506,13 @@ export const submissions: Submission[] = [
           detectedMidi: 60,
           averageFrequency: 262,
           centDeviation: 5,
-          status: "accurate"
+          status: "accurate",
+          writtenTargetMidi: 60,
+          expectedSoundingMidi: 60,
+          rawDetectedMidi: 60.05,
+          scoringAdjustedMidi: 60.05,
+          voiceType: "female",
+          noteRegisterStatus: "normal_register"
         },
         {
           targetPitch: "D4",
@@ -512,7 +521,13 @@ export const submissions: Submission[] = [
           detectedMidi: 62,
           averageFrequency: 292,
           centDeviation: -18,
-          status: "accurate"
+          status: "accurate",
+          writtenTargetMidi: 62,
+          expectedSoundingMidi: 62,
+          rawDetectedMidi: 61.82,
+          scoringAdjustedMidi: 61.82,
+          voiceType: "female",
+          noteRegisterStatus: "normal_register"
         },
         {
           targetPitch: "E4",
@@ -521,7 +536,13 @@ export const submissions: Submission[] = [
           detectedMidi: 64,
           averageFrequency: 335,
           centDeviation: 42,
-          status: "sharp"
+          status: "sharp",
+          writtenTargetMidi: 64,
+          expectedSoundingMidi: 64,
+          rawDetectedMidi: 64.42,
+          scoringAdjustedMidi: 64.42,
+          voiceType: "female",
+          noteRegisterStatus: "normal_register"
         }
       ]
     }

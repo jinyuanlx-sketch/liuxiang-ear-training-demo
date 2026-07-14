@@ -1,4 +1,6 @@
 allowBuilds:
+  gl: false
   sharp: true
 onlyBuiltDependencies:
   - sharp
+verifyDepsBeforeRun: false

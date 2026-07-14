@@ -64,13 +64,3 @@ select {
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(20px);
 }
-
-.staff-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 18px,
-    rgba(244, 239, 230, 0.26) 19px,
-    transparent 20px
-  );
-}

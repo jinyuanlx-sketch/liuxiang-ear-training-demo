@@ -24,12 +24,6 @@ export default async function EarTrainingPracticePage({
     notFound();
   }
 
-  const beforeResources = getTrainingResourceLinks({
-    module: "ear_training",
-    questionId: question.id,
-    assignmentId: assignment.id,
-    position: "before_practice"
-  });
   const afterResources = getTrainingResourceLinks({
     module: "ear_training",
     questionId: question.id,
@@ -43,20 +37,10 @@ export default async function EarTrainingPracticePage({
         <div>
           <Badge tone="success">今日练耳</Badge>
           <h1 className="mt-3 text-3xl font-semibold text-ivory">{assignment.title}</h1>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            播放题目音频，选择答案后立即查看自动判分和练后复盘资源。
-          </p>
         </div>
         <AssignmentEarPractice
           question={question}
-          beforeResources={beforeResources}
           afterResources={afterResources}
-          beforeResourceQuery={{
-            module: "ear_training",
-            questionId: question.id,
-            assignmentId: assignment.id,
-            position: "before_practice"
-          }}
           afterResourceQuery={{
             module: "ear_training",
             questionId: question.id,

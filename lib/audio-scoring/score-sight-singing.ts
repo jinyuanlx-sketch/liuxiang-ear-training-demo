@@ -1,24 +1,47 @@
-import type { PitchComparisonResult } from "@/types/audio";
+import type { PitchComparisonResult, VoiceType } from "@/types/audio";
 import type { SightSingingQuestion } from "@/types/question-bank";
-import { detectPitchTrackFromBlob } from "@/lib/pitch-detection/detect";
+import { analyzePitchTrackFromBlob } from "@/lib/pitch-detection/detect";
 import { comparePitchTrack } from "@/lib/pitch-comparison/compare";
 
 export interface AudioScoringResult extends PitchComparisonResult {
+  writtenTargetPitchJson: NonNullable<PitchComparisonResult["writtenTargetPitchTrack"]>;
+  expectedSoundingPitchJson: NonNullable<PitchComparisonResult["expectedSoundingPitchTrack"]>;
+  rawDetectedPitchJson: NonNullable<PitchComparisonResult["rawDetectedPitchTrack"]>;
   detectedPitchJson: PitchComparisonResult["detectedPitchTrack"];
+  scoringAdjustedPitchJson: NonNullable<PitchComparisonResult["scoringAdjustedPitchTrack"]>;
   comparisonJson: PitchComparisonResult["items"];
   suggestions: string[];
 }
 
 export async function scoreSightSingingRecording(
   audioBlob: Blob,
-  question: SightSingingQuestion
+  question: SightSingingQuestion,
+  options: { voiceType?: VoiceType } = {}
 ): Promise<AudioScoringResult> {
-  const detectedPitchTrack = await detectPitchTrackFromBlob(audioBlob);
-  const comparison = comparePitchTrack(question.targetPitchJson, detectedPitchTrack);
+  const detection = await analyzePitchTrackFromBlob(audioBlob);
+  const comparison = comparePitchTrack(
+    question.targetPitchJson,
+    detection.rawDetectedPitchTrack,
+    {
+      targetRhythms: question.targetRhythmJson,
+      tempo: question.tempo,
+      timeSignature: question.timeSignature,
+      voiceType: options.voiceType ?? "female",
+      scoringAdjustedPitchTrack: detection.scoringAdjustedPitchTrack,
+      rawPitchTrack: detection.rawPitchTrack,
+      lowConfidenceFrames: detection.lowConfidenceFrames,
+      filteredFrames: detection.filteredFrames,
+      octaveCorrections: detection.octaveCorrections
+    }
+  );
 
   return {
     ...comparison,
-    detectedPitchJson: detectedPitchTrack,
+    writtenTargetPitchJson: comparison.writtenTargetPitchTrack ?? [],
+    expectedSoundingPitchJson: comparison.expectedSoundingPitchTrack ?? [],
+    rawDetectedPitchJson: detection.rawDetectedPitchTrack,
+    detectedPitchJson: detection.rawDetectedPitchTrack,
+    scoringAdjustedPitchJson: detection.scoringAdjustedPitchTrack,
     comparisonJson: comparison.items,
     suggestions: buildSuggestions(comparison)
   };
@@ -35,9 +58,15 @@ function buildSuggestions(comparison: PitchComparisonResult) {
     suggestions.push("重点复唱偏高或偏低位置，先在钢琴上确认目标音。");
   }
 
-  if (comparison.stabilityScore < 70) {
-    suggestions.push("保持气息支撑，长音和句尾不要下坠。");
+  const unstableNotes = comparison.items.filter(
+    (item) => (item.stabilityCents ?? 0) > 25
+  );
+
+  if (unstableNotes.length > 0) {
+    suggestions.push("部分单音主体区波动较大，可回放确认录音质量后再慢速复唱。");
   }
 
-  return suggestions.length > 0 ? suggestions : ["本次基础音准较稳定，可提交老师复核。"];
+  return suggestions.length > 0
+    ? suggestions
+    : ["当前技术检测未发现明显异常，仍需由老师结合节奏与乐句复核。"];
 }

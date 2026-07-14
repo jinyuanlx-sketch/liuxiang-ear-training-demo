@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <MetricCard label="本周完成率" value="76%" helper="较上周 +8%" icon={<CheckCircle2 className="h-4 w-4" />} />
-          <MetricCard label="视唱准确度" value="82%" helper="最近一次分析" icon={<Mic2 className="h-4 w-4" />} />
+          <MetricCard label="视唱检测" value="实验中" helper="暂不作为训练评价" icon={<Mic2 className="h-4 w-4" />} />
           <MetricCard label="练耳正确率" value="78%" helper="近 7 天平均" icon={<Ear className="h-4 w-4" />} />
           <MetricCard label="阶段趋势" value="稳定" helper="老师标记" icon={<TrendingUp className="h-4 w-4" />} />
         </div>

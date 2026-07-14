@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next": "latest",
+    "opensheetmusicdisplay": "^1.9.7",
     "react": "latest",
     "react-dom": "latest"
   },
@@ -26,6 +27,6 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "typescript": "latest"
+    "typescript": "6.0.3"
   }
 }

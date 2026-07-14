@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardList, FileAudio, Link2, Library, Sparkles, UsersRound } from "lucide-react";
+import { Activity, ArrowRight, ClipboardList, FileAudio, Link2, Library, Sparkles, UsersRound } from "lucide-react";
 import { TeacherShell } from "@/components/layout/teacher-shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -45,6 +45,13 @@ export default function TeacherDashboardPage() {
       icon: FileAudio
     },
     {
+      href: "/teacher/audio-diagnostics",
+      title: "音频诊断",
+      description: "核对录音格式、设备处理、YIN 轨迹与逐音对齐。",
+      status: "内部测试",
+      icon: Activity
+    },
+    {
       href: "/teacher/theory",
       title: "乐理模块",
       description: "仅保留入口，当前不展开完整题库。",
@@ -60,7 +67,7 @@ export default function TeacherDashboardPage() {
           <Badge tone="warning">老师后台</Badge>
           <h1 className="mt-3 text-3xl font-semibold text-ivory">训练诊断概览</h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            快速查看学生训练状态、自动评分结果和待反馈提交。
+            快速查看学生训练状态、实验性检测结果和待反馈提交。
           </p>
         </div>
 

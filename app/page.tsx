@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 const experienceItems = [
   {
     title: "视唱训练",
-    description: "查看谱面、录制演唱、生成基础音准反馈，再交给老师诊断。",
+    description: "查看标准谱面、录制演唱、运行实验性音高检测，再交给老师诊断。",
     icon: Mic2
   },
   {

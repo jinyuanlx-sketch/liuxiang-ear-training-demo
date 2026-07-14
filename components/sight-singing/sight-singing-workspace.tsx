@@ -1,17 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CheckCircle2, Music2, Send } from "lucide-react";
+import { useRef, useState } from "react";
+import { Send } from "lucide-react";
 import type { SightSingingTargetData } from "@/types/assignment";
-import type { PitchComparisonResult } from "@/types/audio";
+import type { PitchComparisonResult, VoiceType } from "@/types/audio";
 import type { SightSingingQuestion } from "@/types/question-bank";
 import type { TrainingResourceLink, TrainingResourceQuery } from "@/types/training-resource";
 import { AudioRecorder } from "@/components/audio/audio-recorder";
 import { PitchCurve } from "@/components/charts/pitch-curve";
+import { SightScoreViewer } from "@/components/sight-singing/sight-score-viewer";
+import { VoiceTypeDialog } from "@/components/sight-singing/voice-type-dialog";
 import { TrainingResourceList } from "@/components/training-resources/training-resource-list";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { detectPitchTrackFromBlob } from "@/lib/pitch-detection/detect";
+import { analyzePitchTrackFromBlob } from "@/lib/pitch-detection/detect";
 import { comparePitchTrack } from "@/lib/pitch-comparison/compare";
 import { scoreSightSingingRecording } from "@/lib/audio-scoring/score-sight-singing";
 
@@ -29,102 +30,109 @@ export function SightSingingWorkspace({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<PitchComparisonResult | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
+  const [voiceType, setVoiceType] = useState<VoiceType | null>(null);
+  const [isVoiceDialogOpen, setIsVoiceDialogOpen] = useState(false);
+  const pendingStartRecordingRef = useRef<(() => Promise<void>) | null>(null);
   const targetPitches = targetData.targetPitches;
-  const suggestions =
-    analysis && "suggestions" in analysis && Array.isArray(analysis.suggestions)
-      ? (analysis.suggestions as string[])
-      : [];
+  const suggestions = analysis?.suggestions ?? [];
 
-  const noteCells = useMemo(
-    () =>
-      targetPitches.map((pitch, index) => ({
-        pitch,
-        result: analysis?.items[index]
-      })),
-    [analysis?.items, targetPitches]
-  );
+  function handleStartRequest(startRecording: () => Promise<void>) {
+    if (voiceType) {
+      void startRecording();
+      return;
+    }
+
+    pendingStartRecordingRef.current = startRecording;
+    setIsVoiceDialogOpen(true);
+  }
+
+  function handleVoiceTypeSelect(nextVoiceType: VoiceType) {
+    const startRecording = pendingStartRecordingRef.current;
+    pendingStartRecordingRef.current = null;
+    setVoiceType(nextVoiceType);
+    setIsVoiceDialogOpen(false);
+    if (startRecording) void startRecording();
+  }
+
+  function closeVoiceTypeDialog() {
+    pendingStartRecordingRef.current = null;
+    setIsVoiceDialogOpen(false);
+  }
 
   async function handleAudioReady(blob: Blob) {
+    if (!voiceType) {
+      setMessage("请重新开始录音并选择声音类型。");
+      return;
+    }
+
+    const selectedVoiceType = voiceType;
     setIsAnalyzing(true);
     setMessage(null);
 
     try {
-      const comparison = question
-        ? await scoreSightSingingRecording(blob, question)
-        : comparePitchTrack(targetPitches, await detectPitchTrackFromBlob(blob));
-      setAnalysis(comparison);
+      if (question) {
+        setAnalysis(await scoreSightSingingRecording(blob, question, { voiceType: selectedVoiceType }));
+      } else {
+        const detection = await analyzePitchTrackFromBlob(blob);
+        setAnalysis(
+          comparePitchTrack(targetPitches, detection.rawDetectedPitchTrack, {
+            targetRhythms: targetData.rhythmPattern,
+            tempo: targetData.tempo,
+            timeSignature: targetData.meter,
+            voiceType: selectedVoiceType,
+            scoringAdjustedPitchTrack: detection.scoringAdjustedPitchTrack,
+            rawPitchTrack: detection.rawPitchTrack,
+            lowConfidenceFrames: detection.lowConfidenceFrames,
+            filteredFrames: detection.filteredFrames,
+            octaveCorrections: detection.octaveCorrections
+          })
+        );
+      }
     } catch {
-      setMessage("音高分析失败。请确认录音中有人声，并使用较新的浏览器。");
+      setMessage("音高检测失败。请先回放确认录音可用，并在录音诊断页查看格式与采样设置。");
     } finally {
       setIsAnalyzing(false);
     }
   }
 
+  const pitchedItems = analysis?.items.filter((item) => item.status !== "rest") ?? [];
+  const matchedItems = pitchedItems.filter((item) => item.centDeviation !== null);
+  const stableValues = matchedItems
+    .map((item) => item.stabilityCents)
+    .filter((value): value is number => value !== null && value !== undefined);
+  const medianStability = stableValues.length > 0
+    ? [...stableValues].sort((a, b) => a - b)[Math.floor(stableValues.length / 2)]
+    : null;
+
   return (
     <div className="space-y-4">
       <div className="liuxiang-panel rounded-lg p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-sm text-muted">谱例信息</div>
-            <h2 className="mt-1 text-xl font-semibold text-ivory">{targetData.trainingGoal}</h2>
-          </div>
-          <Badge tone="warning">{targetData.difficultyLabel}</Badge>
+        <div className="text-sm font-medium text-ivory">标准五线谱</div>
+        <SightScoreViewer question={question} />
+        <div className="mt-3 border-t border-ivory/10 pt-3">
+          <div className="text-xs text-muted">教师提示</div>
+          <p className="mt-1 text-sm leading-6 text-ivory/85">{targetData.teacherInstruction}</p>
         </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">调号</div>
-            <div className="mt-1 text-ivory">{targetData.key}</div>
-          </div>
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">拍号</div>
-            <div className="mt-1 text-ivory">{targetData.meter}</div>
-          </div>
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">速度</div>
-            <div className="mt-1 text-ivory">{targetData.tempo} bpm</div>
-          </div>
-        </div>
-
-        <div className="staff-lines mt-4 rounded-lg border border-ivory/10 bg-ink-950/50 p-4">
-          <div className="flex min-h-36 items-center gap-3 overflow-x-auto pb-2">
-            {noteCells.map((cell, index) => (
-              <div
-                key={`${cell.pitch}-${index}`}
-                className="flex min-w-14 flex-col items-center justify-center gap-2"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brass/40 bg-ink-950 text-sm font-semibold text-brass">
-                  {cell.pitch.replace(/\d/, "")}
-                </div>
-                <span className="text-xs text-muted">{cell.pitch}</span>
-                {cell.result ? (
-                  <span
-                    className={
-                      cell.result.status === "accurate"
-                        ? "text-xs text-jade"
-                        : "text-xs text-brass"
-                    }
-                  >
-                    {cell.result.status === "accurate"
-                      ? "准"
-                      : cell.result.centDeviation
-                        ? `${cell.result.centDeviation}c`
-                        : "漏"}
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <p className="mt-4 text-sm leading-6 text-muted">{targetData.teacherInstruction}</p>
       </div>
 
-      <AudioRecorder onAudioReady={handleAudioReady} />
+      <AudioRecorder
+        onAudioReady={handleAudioReady}
+        onStartRequest={handleStartRequest}
+        onReset={() => {
+          setAnalysis(null);
+          setMessage(null);
+        }}
+      />
+      <p className="px-1 text-xs leading-5 text-muted">音高检测为实验功能，结果仅供练习参考。</p>
+
+      <VoiceTypeDialog
+        open={isVoiceDialogOpen}
+        onSelect={handleVoiceTypeSelect}
+        onClose={closeVoiceTypeDialog}
+      />
 
       {isAnalyzing ? (
-        <div className="liuxiang-panel rounded-lg p-4 text-sm text-muted">正在分析音高曲线...</div>
+        <div className="liuxiang-panel rounded-lg p-4 text-sm text-muted">正在运行 YIN 检测与节奏时间轴对齐...</div>
       ) : null}
 
       {message ? (
@@ -133,18 +141,21 @@ export function SightSingingWorkspace({
         </div>
       ) : null}
 
-      <PitchCurve
-        targetPitches={targetPitches}
-        detectedPitchTrack={analysis?.detectedPitchTrack ?? []}
-        comparison={analysis}
-      />
+      {analysis ? (
+        <PitchCurve
+          targetPitches={targetPitches}
+          rawDetectedPitchTrack={analysis.rawDetectedPitchTrack ?? []}
+          comparison={analysis}
+          voiceType={analysis.voiceType ?? voiceType ?? "female"}
+        />
+      ) : null}
 
       {analysis ? (
         <div className="grid grid-cols-2 gap-3">
-          <ResultStat label="音高准确度" value={`${analysis.pitchAccuracy}%`} />
-          <ResultStat label="平均偏差" value={`${analysis.averageCentDeviation} cents`} />
-          <ResultStat label="最大偏差" value={`${analysis.maxCentDeviation} cents`} />
-          <ResultStat label="稳定性" value={`${analysis.stabilityScore}%`} />
+          <ResultStat label="逐音检测参考" value={`${matchedItems.length}/${pitchedItems.length} 个`} />
+          <ResultStat label="平均偏差参考" value={`${analysis.averageCentDeviation} cents`} />
+          <ResultStat label="单音内波动中位数" value={medianStability === null ? "-" : `${medianStability} cents`} />
+          <ResultStat label="低置信度帧" value={`${analysis.lowConfidenceFrames ?? 0} 帧`} />
         </div>
       ) : null}
 
@@ -161,51 +172,21 @@ export function SightSingingWorkspace({
         </div>
       ) : null}
 
-      <Button
-        type="button"
-        variant="primary"
-        className="w-full"
-        icon={analysis ? <Send className="h-4 w-4" /> : <Music2 className="h-4 w-4" />}
-        disabled={!analysis}
-      >
-        {analysis ? "提交给老师诊断" : "完成分析后可提交"}
-      </Button>
-
       {analysis ? (
-        <div className="flex items-start gap-2 rounded-lg border border-jade/20 bg-jade/10 p-3 text-sm text-jade">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>AI 基础训练反馈，仅供日常练习参考，最终诊断以老师反馈为准。</span>
-        </div>
+        <Button
+          type="button"
+          variant="primary"
+          className="w-full"
+          icon={<Send className="h-4 w-4" />}
+        >
+          提交录音给老师诊断
+        </Button>
       ) : null}
-
-      <div className="liuxiang-panel rounded-lg p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-sm font-medium text-ivory">老师反馈</div>
-            <div className="mt-1 text-xs text-muted">Demo 示例，正式提交后由老师更新。</div>
-          </div>
-          <Badge tone="warning">待复核</Badge>
-        </div>
-        <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">音准</div>
-            <div className="mt-1 text-ivory">三度跳进前先内心听到目标音</div>
-          </div>
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">调性感</div>
-            <div className="mt-1 text-ivory">句尾主音不要下压</div>
-          </div>
-          <div className="rounded-md border border-ivory/10 bg-ivory/5 p-3">
-            <div className="text-xs text-muted">下一步</div>
-            <div className="mt-1 text-ivory">录音后复盘对应训练视频</div>
-          </div>
-        </div>
-      </div>
 
       {analysis ? (
         <TrainingResourceList
           title="对应训练"
-          helper="这是与本题训练点相关的讲解资源。观看后可返回继续练习。"
+          helper="完成练习后，可观看对应讲解。"
           resources={resultResources}
           resourceQuery={resultResourceQuery}
         />
@@ -218,7 +199,7 @@ function ResultStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="liuxiang-panel rounded-lg p-4">
       <div className="text-xs text-muted">{label}</div>
-      <div className="mt-2 text-xl font-semibold text-ivory">{value}</div>
+      <div className="mt-2 text-lg font-semibold text-ivory">{value}</div>
     </div>
   );
 }

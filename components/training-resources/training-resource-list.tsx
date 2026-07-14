@@ -43,26 +43,26 @@ export function TrainingResourceList({
         <Film className="h-4 w-4 shrink-0 text-brass" />
       </div>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
         {visibleResources.map((resource) => (
           <button
             key={resource.id}
             type="button"
             onClick={() => openResource(resource)}
-            className="w-full rounded-md border border-ivory/10 bg-ink-950/40 p-3 text-left transition hover:border-brass/35 hover:bg-ivory/5"
+            className="w-full rounded-md border border-ivory/10 bg-ink-950/40 px-3 py-2.5 text-left transition hover:border-brass/35 hover:bg-ivory/5"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Badge tone="neutral">{resourceTypeLabels[resource.resourceType]}</Badge>
                   <span className="text-xs text-muted">{platformLabels[resource.platform]}</span>
                 </div>
-                <div className="mt-2 text-sm font-medium text-ivory">{resource.title}</div>
+                <div className="mt-2 truncate text-sm font-medium text-ivory">{resource.title}</div>
                 {resource.description ? (
-                  <p className="mt-1 text-xs leading-5 text-muted">{resource.description}</p>
+                  <p className="mt-1 truncate text-xs text-muted" title={resource.description}>{resource.description}</p>
                 ) : null}
               </div>
-              <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted" />
+              <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
             </div>
           </button>
         ))}

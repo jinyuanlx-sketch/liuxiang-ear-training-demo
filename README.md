@@ -51,12 +51,17 @@ NEXT_PUBLIC_DEMO_ACCESS_PASSWORD=你的内部测试密码
 
 - `/`：Web App 首页入口
 - `/dashboard`：学生首页
-- `/sight-singing/practice/sg-001`：视唱录音、音高分析、老师反馈 Demo、对应训练资源
+- `/sight-singing/practice/sg-001`：真实 MusicXML 谱面、录音、实验性 YIN 音高检测、老师反馈 Demo、对应训练资源
+- `/teacher/audio-diagnostics`：录音格式、设备约束、波形、原始/处理后音高轨迹、逐音对齐与测试用例
 - `/ear-training`：练耳入口和老师布置的 Demo 任务
 - `/ear-training/practice/ear-single-001`：练耳播放、答题、自动判分、对应训练资源
 - `/teacher`：老师后台原型入口
 - `/teacher/sight-singing/question-bank/sight_teacher_001`：训练资源链接管理 Demo
 - `/theory`、`/teacher/theory`：乐理模块预留
+
+## 视唱检测状态
+
+当前视唱检测统一标记为“实验性音高检测，仅用于技术测试，暂不作为训练评价”。浏览器端采用 YIN、置信度过滤、中值平滑、单帧八度修正和节奏时间轴 + 序列 DTW 对齐；iPhone Safari 与真实人声素材仍需在音频诊断页完成 A/B 验证，当前不输出艺考成绩或权威百分数。
 
 ## Web App / PWA 预留
 

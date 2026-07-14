@@ -15,7 +15,7 @@ export default function SightSingingPage() {
           <Badge tone="warning">核心模块</Badge>
           <h1 className="mt-3 text-3xl font-semibold text-ivory">视唱训练</h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            查看谱例、录制视唱、生成基础音准反馈，再提交给老师诊断。
+            查看标准谱面、录制视唱、运行实验性音高检测，再提交给老师诊断。
           </p>
         </div>
 

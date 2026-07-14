@@ -40,7 +40,7 @@ export default function TeacherSubmissionsPage() {
                   <Badge tone={submission.status === "auto_scored" ? "warning" : "success"}>
                     {submission.status}
                   </Badge>
-                  <div className="mt-2 text-sm text-muted">自动 {submission.autoScore ?? "-"}</div>
+                  <div className="mt-2 text-sm text-muted">音高检测：实验性技术数据</div>
                 </div>
               </Link>
             );

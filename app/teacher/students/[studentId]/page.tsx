@@ -90,7 +90,7 @@ export default async function TeacherStudentDetailPage({
                 <Badge tone="warning">已提交</Badge>
                 <h3 className="mt-3 text-base font-semibold text-ivory">视唱录音提交</h3>
                 <p className="mt-2 text-sm text-muted">
-                  自动评分：{submission.autoScore ?? "-"} · {formatDate(submission.submittedAt)}
+                  实验性音高检测 · {formatDate(submission.submittedAt)}
                 </p>
               </Link>
             ))}

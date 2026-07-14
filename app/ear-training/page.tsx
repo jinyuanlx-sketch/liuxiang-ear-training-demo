@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Ear, Layers3, Music2 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
+import { TrainingResourceList } from "@/components/training-resources/training-resource-list";
 import { Badge } from "@/components/ui/badge";
 import { assignments } from "@/lib/mock-data";
+import { getTrainingResourceLinks } from "@/lib/training-resource-links";
 
 const earModules = [
   {
@@ -27,6 +29,18 @@ const earModules = [
 
 export default function EarTrainingPage() {
   const earAssignments = assignments.filter((assignment) => assignment.module === "ear_training");
+  const featuredAssignment = earAssignments.find((assignment) => assignment.questionId);
+  const featuredResourceQuery = featuredAssignment?.questionId
+    ? {
+        module: "ear_training" as const,
+        questionId: featuredAssignment.questionId,
+        assignmentId: featuredAssignment.id,
+        position: "after_practice" as const
+      }
+    : undefined;
+  const featuredResources = featuredResourceQuery
+    ? getTrainingResourceLinks(featuredResourceQuery)
+    : [];
 
   return (
     <AppShell>
@@ -34,9 +48,7 @@ export default function EarTrainingPage() {
         <div>
           <Badge tone="success">自动判分</Badge>
           <h1 className="mt-3 text-3xl font-semibold text-ivory">练耳训练</h1>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            第一版优先支持能稳定自动判分的基础题型，节奏和旋律听写先做结构预留。
-          </p>
+          <p className="mt-2 text-sm leading-6 text-muted">单音、音程与和弦听辨专项训练。</p>
         </div>
 
         <div className="liuxiang-panel rounded-lg p-4">
@@ -44,9 +56,6 @@ export default function EarTrainingPage() {
             <div>
               <Badge tone="success">今日练耳任务</Badge>
               <h2 className="mt-3 text-lg font-semibold text-ivory">老师布置的专项练习</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                进入后可体验播放、答题、自动判分和对应训练视频资源。
-              </p>
             </div>
           </div>
           <div className="mt-4 grid gap-2">
@@ -73,7 +82,7 @@ export default function EarTrainingPage() {
                   <Icon className="h-5 w-5" />
                 </div>
                 <h2 className="mt-4 text-lg font-semibold text-ivory">{module.title}</h2>
-                <p className="mt-2 min-h-16 text-sm leading-6 text-muted">{module.description}</p>
+                <p className="mt-2 text-sm leading-6 text-muted">{module.description}</p>
                 <div className="mt-4 flex items-center justify-between text-sm text-jade">
                   进入训练
                   <ArrowRight className="h-4 w-4" />
@@ -90,6 +99,13 @@ export default function EarTrainingPage() {
             未来支持节奏选择、听写、跟打与节拍稳定性分析。第一版暂不开发复杂节奏识别。
           </p>
         </div>
+
+        <TrainingResourceList
+          title="对应训练"
+          helper="完成练习后，可观看对应讲解。"
+          resources={featuredResources}
+          resourceQuery={featuredResourceQuery}
+        />
       </div>
     </AppShell>
   );
